@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Master - Delicious Recipes for Every Meal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for elements that need more specific styling */
+        .recipe-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .like-btn.liked {
+            color: #ef4444;
+        }
+        .category-btn.active {
+            background-color: #f97316;
+            color: white;
+        }
+        .admin-panel {
+            display: none;
+        }
+        .admin-login {
+            display: none;
+        }
+        .show-admin {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 font-sans">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-utensils text-3xl text-orange-500 mr-2"></i>
+                    <h1 class="text-2xl font-bold text-gray-800">Recipe Master</h1>
+                </div>
+                
+                <nav class="w-full md:w-auto">
+                    <ul class="flex flex-wrap justify-center space-x-1 md:space-x-4">
+                        <li><button class="category-btn active px-3 py-2 rounded-lg transition" data-category="all">All Recipes</button></li>
+                        <li><button class="category-btn px-3 py-2 rounded-lg transition" data-category="breakfast">Breakfast</button></li>
+                        <li><button class="category-btn px-3 py-2 rounded-lg transition" data-category="lunch">Lunch</button></li>
+                        <li><button class="category-btn px-3 py-2 rounded-lg transition" data-category="dinner">Dinner</button></li>
+                        <li><button class="category-btn px-3 py-2 rounded-lg transition" data-category="snacks">Snacks</button></li>
+                        <li><button class="category-btn px-3 py-2 rounded-lg transition" data-category="beverages">Beverages</button></li>
+                    </ul>
+                </nav>
+                
+                <div class="mt-4 md:mt-0 flex items-center space-x-2">
+                    <div class="relative">
+                        <input type="text" placeholder="Search recipes..." class="pl-10 pr-4 py-2 border rounded-full w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <button id="admin-toggle" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg transition">
+                        <i class="fas fa-user-shield"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Login Section -->
+    <section id="admin-login" class="admin-login container mx-auto px-4 py-8 max-w-md">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Admin Login</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-gray-700 mb-1">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                </div>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition">Login</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Admin Panel Section -->
+    <section id="admin-panel" class="admin-panel container mx-auto px-4 py-8">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Admin Panel</h2>
+                <button id="logout-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg transition">
+                    Logout <i class="fas fa-sign-out-alt ml-1"></i>
+                </button>
+            </div>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Add New Recipe</h3>
+                <form id="recipe-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="recipe-title" class="block text-gray-700 mb-1">Title</label>
+                            <input type="text" id="recipe-title" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                        </div>
+                        <div>
+                            <label for="recipe-author" class="block text-gray-700 mb-1">Author</label>
+                            <input type="text" id="recipe-author" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-category" class="block text-gray-700 mb-1">Category</label>
+                        <select id="recipe-category" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="beverages">Beverages</option>
+                            <option value="healthy">Healthy</option>
+                            <option value="special">Special</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-image" class="block text-gray-700 mb-1">Image URL</label>
+                        <input type="text" id="recipe-image" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-intro" class="block text-gray-700 mb-1">Introduction</label>
+                        <textarea id="recipe-intro" rows="2" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-ingredients" class="block text-gray-700 mb-1">Ingredients (one per line)</label>
+                        <textarea id="recipe-ingredients" rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-instructions" class="block text-gray-700 mb-1">Instructions (one step per line)</label>
+                        <textarea id="recipe-instructions" rows="6" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="recipe-prep-time" class="block text-gray-700 mb-1">Prep Time (mins)</label>
+                            <input type="number" id="recipe-prep-time" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                        </div>
+                        <div>
+                            <label for="recipe-cook-time" class="block text-gray-700 mb-1">Cook Time (mins)</label>
+                            <input type="number" id="recipe-cook-time" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                        </div>
+                        <div>
+                            <label for="recipe-servings" class="block text-gray-700 mb-1">Servings</label>
+                            <input type="number" id="recipe-servings" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="recipe-tags" class="block text-gray-700 mb-1">Tags (comma separated)</label>
+                        <input type="text" id="recipe-tags" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="e.g., Vegan, Quick, Gluten-free">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition">Add Recipe</button>
+                </form>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Manage Recipes</h3>
+                <div id="admin-recipes-list" class="space-y-4">
+                    <!-- Recipes will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Section -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Featured Recipe Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Featured Recipe</h2>
+            <div id="featured-recipe" class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <!-- Featured recipe will be loaded here -->
+            </div>
+        </section>
+        
+        <!-- Recipe Categories Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Latest Recipes</h2>
+            <div id="recipes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Recipes will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Recipe Modal (hidden by default) -->
+    <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800"></h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6">
+                <!-- Recipe content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fas fa-utensils text-2xl text-orange-500 mr-2"></i>
+                        <h2 class="text-xl font-bold">Recipe Master</h2>
+                    </div>
+                    <p class="mt-2 text-gray-400">Delicious recipes for every meal</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-orange-400 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="hover:text-orange-400 transition"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="hover:text-orange-400 transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="hover:text-orange-400 transition"><i class="fab fa-pinterest"></i></a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 Recipe Master. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <<script>
+    // Sample recipe data
+    let recipes = [
+        {
+            id: 1,
+            title: "Creamy Paneer Butter Masala",
+            // author: "Chef Maria", // Author removed
+            date: "2025-07-10",
+            category: "lunch",
+            image: "images/Creamy Paneer Butter Masala.jpg",
+            intro: "Paneer Butter Masala is a rich and creamy tomato-based curry that’s mildly spiced and slightly sweet. It’s one of the most popular Indian dishes served in restaurants and pairs wonderfully with naan or jeera rice.",
+            ingredients: [
+                "200g paneer, cubed",
+                "2 medium tomatoes, chopped",
+                "1 medium onion, chopped",
+                "1 tbsp butter + 1 tsp oil",
+                "1 tsp ginger-garlic paste",
+                "6–8 cashews (soaked for 10 minutes)",
+                "½ tsp red chili powder",
+                "½ tsp garam masala",
+                "¼ tsp turmeric",
+                "2 tbsp cream or malai",
+                "Salt to taste",
+                "Fresh coriander leaves for garnish",
+            ],
+            instructions: [
+                "Blend tomatoes, soaked cashews, and onions into a smooth paste.",
+                "Heat butter and oil in a pan. Add ginger-garlic paste and sauté for a minute.",
+                "Add the tomato-cashew-onion puree. Cook on medium heat until the oil separates.",
+                "Add turmeric, red chili powder, salt, and garam masala. Mix well.",
+                "Add paneer cubes and ½ cup water. Cook for 5 minutes so paneer absorbs flavors.",
+                "Stir in cream and cook for another 2 minutes.",
+                "Garnish with fresh coriander leaves.",
+            ],
+            prepTime: 10,
+            cookTime: 20,
+            servings: 2,
+            tags: ["PaneerButterMasala ", "NorthIndianFood ", "Vegetarian"],
+            likes: 24
+        },
+        {
+            id: 2,
+            title: "Aloo Paratha – Stuffed Potato Flatbread",
+            // author: "Chef John", // Author removed
+            date: "2025-07-10",
+            category: "breakfast",
+            image: "images/Aloo Paratha.jpg",
+            intro: "Aloo Paratha is a popular North Indian breakfast dish made by stuffing spiced mashed potatoes into whole wheat dough. Crispy outside and soft inside, it’s perfect for a hearty meal..",
+            ingredients: [
+                "For the dough:",
+                "1½ cups whole wheat flour",
+                "Salt to taste",
+                "Water (as needed)",
+                "For the stuffing:",
+                "2 medium potatoes, boiled and mashed",
+                "1 green chili, finely chopped",
+                "½ tsp cumin seeds",
+                "½ tsp garam masala",
+                "Salt to taste",
+                "1 tbsp chopped fresh coriander leaves",
+            ],
+            instructions: [
+                "In a bowl, mix whole wheat flour, salt, and enough water to make a soft dough. Cover and let it rest for 15 minutes.",
+                "In another bowl, combine boiled and mashed potatoes, green chili, cumin seeds, garam masala, salt, and chopped coriander leaves. Mix well to make the stuffing.",
+                "Divide the dough and stuffing into equal portions.",
+                "Roll out a dough ball into a small circle, place a portion of stuffing in the center, and bring the edges together to seal.",
+                "Gently roll the stuffed ball into a flat, round paratha using a rolling pin, dusting with flour as needed.",
+                "Heat a tawa or skillet over medium heat. Cook the paratha on both sides, applying a little oil or ghee, until golden brown and cooked through.",
+                "Serve hot with yogurt, pickle, or butter."
+            ],
+            prepTime: 15,
+            cookTime: 15,
+            servings: 3,
+            tags: ["Grill", "American", "Comfort Food"],
+            likes: 42
+        },
+        {
+            id: 3,
+            title: "Creamy Garlic Pasta",
+            // author: "Chef Sophia", // Author removed
+            date: "2025-07-10",
+            category: "dinner",
+            image: "images/Creamy Garlic Pasta.jpg",
+            intro: "A rich and creamy pasta dish that comes together in just 20 minutes. Perfect for a quick weeknight dinner.",
+            ingredients: [
+                "220gm fettuccine or linguine",
+                "2 tbsp butter",
+                "4 cloves garlic, minced",
+                "1 cup heavy cream",
+                "1/2 cup grated Parmesan cheese",
+                "Salt and pepper to taste",
+                "Fresh parsley, chopped",
+                "Red pepper flakes (optional)"
+            ],
+            instructions: [
+                "Cook pasta according to package instructions in salted water. Reserve 1/2 cup pasta water before draining.",
+                "In a large skillet, melt butter over medium heat. Add garlic and sauté for 30 seconds until fragrant.",
+                "Pour in heavy cream and bring to a simmer. Cook for 2-3 minutes until slightly thickened.",
+                "Stir in Parmesan cheese until melted and smooth. If sauce is too thick, add reserved pasta water a little at a time.",
+                "Add cooked pasta to the sauce and toss to coat evenly. Season with salt and pepper to taste.",
+                "Garnish with chopped parsley and red pepper flakes if desired.",
+                "Serve immediately with additional Parmesan cheese on the side."
+            ],
+            prepTime: 5,
+            cookTime: 15,
+            servings: 4,
+            tags: ["Italian", "Vegetarian", "Quick"],
+            likes: 37
+        },
+        {
+            id: 4,
+            title: "Berry Smoothie Bowl",
+            // author: "Chef Emma", // Author removed
+            date: "2025-07-11",
+            category: "breakfast",
+            image: "images/Berry Smoothie Bowl.jpg",
+            intro: "A refreshing and nutritious breakfast bowl packed with antioxidants and vitamins to start your day right.",
+            ingredients: [
+                "1 frozen banana",  
+                "1 cup mixed frozen berries (strawberries, blueberries, raspberries)",
+                "1/2 cup Greek yogurt",
+                "1/4 cup almond milk",
+                "1 tbsp honey or maple syrup (optional)",
+                "Toppings: granola, fresh berries, chia seeds, coconut flakes, nuts"
+            ],
+            instructions: [
+                "In a blender, combine frozen banana, mixed berries, Greek yogurt, and almond milk.",
+                "Blend until smooth and creamy. Add more almond milk if needed to reach desired consistency.",
+                "Taste and add honey or maple syrup if you prefer it sweeter.",
+                "Pour into a bowl and arrange your favorite toppings on top.",
+                "Serve immediately with a spoon and enjoy!"
+            ],
+            prepTime: 5,
+            cookTime: 0,
+            servings: 1,
+            tags: ["Vegan", "Healthy", "Quick"],
+            likes: 19
+        },
+        {
+            id: 5,
+            title: "Homemade Lemonade",
+            // author: "Chef David", // Author removed
+            date: "2025-07-11",
+            category: "beverages",
+            image: "images/Homemade Lemonade.jpg",
+            intro: "The perfect refreshing drink for hot summer days. Adjust sweetness to your preference.",
+            ingredients: [
+                "1 cup fresh lemon juice (about 6-8 lemons)",
+                "3/4 cup granulated sugar",
+                "4 cups cold water",
+                "Ice cubes",
+                "Lemon slices and mint leaves for garnish"
+            ],
+            instructions: [
+                "In a small saucepan, combine 1 cup water with sugar. Heat over medium until sugar dissolves completely to make simple syrup. Let cool.",
+                "Juice lemons until you have 1 cup of fresh lemon juice. Strain to remove seeds and pulp if desired.",
+                "In a pitcher, combine lemon juice, simple syrup, and remaining 3 cups cold water. Stir well.",
+                "Taste and adjust sweetness by adding more water or simple syrup as needed.",
+                "Chill in refrigerator for at least 30 minutes before serving.",
+                "Serve over ice with lemon slices and mint leaves for garnish."
+            ],
+            prepTime: 15,
+            cookTime: 5,
+            servings: 4,
+            tags: ["Summer", "Refreshing", "Non-alcoholic"],
+            likes: 28
+        },
+        {
+            id: 6,
+            title: "Masala Chai – Spiced Indian Tea",
+            // author: "Chef Luca", // Author removed
+            date: "2025-07-11",
+            category: "beverages",
+            image: "images/Masala chai.jpg",
+            intro: "Masala Chai is India’s favorite tea made by brewing black tea with aromatic spices, milk, and sugar. It’s a warming and energizing drink that’s perfect in the morning or evening.",
+            ingredients: [
+                "1½ cups water",
+                "1 cup full-fat milk",
+                "2 tsp black tea leaves or 2 tea bags",
+                "2–3 crushed green cardamoms",
+                "1 small cinnamon stick",
+                "3–4 cloves",
+                "1-inch piece of ginger (crushed)",
+                "2 tsp sugar (adjust to taste)",
+            ],
+            instructions: [
+                "In a saucepan, add water, crushed spices (cardamom, cinnamon, cloves), and ginger. Bring it to a boil.",
+                "Let it simmer for 2–3 minutes to infuse flavors.",
+                "Add tea leaves and boil for another 2 minutes.",
+                "Pour in the milk and sugar. Let it come to a boil again.",
+                "Simmer on low for 2–3 minutes until you get a nice color and aroma.",
+                "Strain the tea into cups and serve hot.",
+            ],
+            prepTime: 2,
+            cookTime: 8,
+            servings: 2,
+            tags: ["MasalaChai ", "IndianTea ", "ChaiLovers "],
+            likes: 31
+        },
+        {
+            id: 7,
+            title: "Poha – Light and Healthy Flattened Rice",
+            // author: "Chef Raj", // Author removed
+            date: "2025-07-11",
+            category: "Breakfast",
+            image: "images/poha.jpg",
+            intro: "Poha is a light, nutritious, and quick Indian breakfast made with flattened rice, peanuts, onions, and basic spices. It’s filling yet easy on the stomach.",
+            ingredients: [
+                "1 cup poha (flattened rice)",
+                "1 onion, finely chopped",
+                "1 green chili, chopped",
+                "1/4 cup peanuts",
+                "1  tsp mustard seeds",
+                "5 curry leaves",
+                "1 tsp turmeric",
+                "  Salt to taste",
+                "1 tsp lemon juice",
+                "Chopped coriander for garnish",
+            ],
+            instructions: [
+                "Rinse poha in a strainer under running water. Set aside to soften.",
+                "Heat oil in a pan. Add mustard seeds, peanuts, and curry leaves.",
+                "Add chopped onions and green chili. Sauté till onions turn translucent.",
+                "Add turmeric and salt. Mix.",
+                "Add the soaked poha and mix gently.",
+                "Cook for 2 to 3 minutes. Turn off the heat.",
+                "Add lemon juice and garnish with chopped coriander.",
+            ],
+            prepTime: 5,
+            cookTime: 10,
+            servings: 2,
+            tags: ["Indian", "poha", "LightMeal ", "IndianBreakfast "],
+            likes: 55
+        },
+        {
+            id: 8,
+            title: "Moong Dal Khichdi – Comforting One-Pot Meal",
+            // author: "Chef Priya", // Author removed
+            date: "2025-07-11",
+            category: "dinner",
+            image: "images/Moong Dal Khichdi.jpg",
+            intro: "Moong Dal Khichdi is a soothing, easy-to-digest dish made with rice and yellow moong dal. It’s ideal for a light meal, sick days, or when you just want something simple and nourishing.",
+            ingredients: [
+                "½ cup yellow moong dal (split)",
+                "½ cup rice (any variety, washed and soaked for 15 minutes)",
+                "1 small onion, chopped",
+                "1 small tomato, chopped",
+                "1 green chili, chopped (optional)",
+                "1 tsp cumin seeds",
+                "½ tsp turmeric powder",
+                "2 tbsp ghee or oil",
+                "3 cups water",
+                "Salt to taste",
+                "Fresh coriander for garnish",  
+            ],
+            instructions: [
+                "In a pressure cooker, heat ghee or oil. Add cumin seeds and let them splutter.",
+                "Add chopped onions and sauté until golden.",
+                "Add green chili, tomato, and turmeric powder. Cook for 2–3 minutes.",
+                "Add soaked rice and dal. Mix well.",
+                "Pour in 3 cups of water and add salt. Close the lid and cook for 3–4 whistles.",
+                "Let the pressure release naturally. Open and mix gently.",
+                "Adjust consistency by adding hot water if needed.",
+            ],
+            prepTime: 10,
+            cookTime: 20,
+            servings: 3,
+            tags: ["Khichdi", "MoongDal", "ComfortFood", "OnePotMeal"],
+            likes: 48
+        },
+        {
+            id: 9,
+            title: "Masala Dosa",
+            // author: "Chef Anand", // Author removed
+            date: "2025-07-10",
+            category: "breakfast",
+            image: "images/Masala Dosa.jpg",
+            intro: "A popular South Indian breakfast, light and crispy crepes filled with a flavorful potato masala.",
+            ingredients: [
+                "For Dosa Batter (store-bought or homemade, fermented)",
+                "2 tbsp oil",
+                "1 tsp mustard seeds",
+                "1 tsp urad dal (split black lentils)",
+                "1/2 tsp chana dal (split chickpeas)",
+                "1 large onion, finely chopped",
+                "2 green chilies, slit",
+                "1 sprig curry leaves",
+                "4-5 boiled potatoes, mashed",
+                "1/2 tsp turmeric powder",
+                "Salt to taste",
+                "Fresh cilantro, chopped",
+                "Serve with: Sambar and Coconut Chutney"
+            ],
+            instructions: [
+                "Heat oil in a pan. Add mustard seeds, urad dal, and chana dal. Sauté until dals turn golden.",
+                "Add chopped onion, green chilies, and curry leaves. Sauté until onion is translucent.",
+                "Add mashed potatoes, turmeric powder, and salt. Mix well and cook for 5 minutes.",
+                "Stir in chopped cilantro. The potato masala is ready.",
+                "Heat a non-stick tawa (griddle) and lightly grease it. Pour a ladleful of dosa batter and spread it thinly in a circular motion.",
+                "Drizzle a little oil around the edges. Cook until the dosa is golden and crispy.",
+                "Place a spoonful of potato masala in the center of the dosa. Fold the dosa in half or roll it up.",
+                "Serve hot with sambar and coconut chutney."
+            ],
+            prepTime: 20, // Assuming batter is ready
+            cookTime: 20,
+            servings: 4,
+            tags: ["Indian", "Breakfast", "Vegetarian", "South Indian"],
+            likes: 40
+        },
+        {
+            id: 10,
+            title: "Chole Bhature",
+            // author: "Chef Khanna", // Author removed
+            date: "2025-07-11",
+            category: "lunch",
+            image: "images/Chole Bhature.jpg",
+            intro: "A popular North Indian dish of spicy chickpeas (chole) and fluffy, deep-fried bread (bhature).",
+            ingredients: [
+                "For Chole (Chickpea Curry):",
+                "1 cup dried chickpeas, soaked overnight and boiled until tender",
+                "2 tbsp oil",
+                "1 large onion, finely chopped",
+                "1 tbsp ginger-garlic paste",
+                "1 can (14.5 oz) crushed tomatoes",
+                "1 tsp cumin powder",
+                "1 tsp coriander powder",
+                "1/2 tsp turmeric powder",
+                "1 tsp chole masala (chickpea spice blend)",
+                "Salt to taste",
+                "Water as needed",
+                "For Bhature (Fried Bread):",
+                "2 cups all-purpose flour",
+                "1/4 cup yogurt",
+                "1/2 tsp baking powder",
+                "1/4 tsp baking soda",
+                "1 tsp sugar",
+                "Salt to taste",
+                "Water to knead",
+                "Oil for deep frying"
+            ],
+            instructions: [
+                "For Chole: Heat oil in a pot. Sauté onion until golden. Add ginger-garlic paste, cook for 1 minute.",
+                "Add crushed tomatoes, cumin, coriander, turmeric, chole masala, and salt. Cook until oil separates.",
+                "Add boiled chickpeas and enough water to get desired consistency. Simmer for 15-20 minutes.",
+                "For Bhature: In a bowl, mix flour, yogurt, baking powder, baking soda, sugar, and salt. Knead into a soft dough using water.",
+                "Cover and let rest for at least 30 minutes.",
+                "Divide dough into small balls. Roll each ball into an oval or round shape.",
+                "Heat oil for deep frying. Carefully slide a rolled bhatura into hot oil. Press gently with a ladle to puff it up.",
+                "Flip and fry until golden brown on both sides. Drain on paper towels.",
+                "Serve hot chole with freshly fried bhature."
+            ],
+            prepTime: 30,
+            cookTime: 40,
+            servings: 4,
+            tags: ["Indian", "Street Food", "Vegetarian", "North Indian"],
+            likes: 60
+        },
+        {
+            id: 11,
+            title: "Vegetable Biryani",
+            // author: "Chef Aisha", // Author removed
+            date: "2025-07-11",
+            category: "dinner",
+            image: "images/Vegetable Biryani.jpg",
+            intro: "A fragrant and flavorful one-pot rice dish with assorted vegetables and aromatic spices, perfect for a hearty meal.",
+            ingredients: [
+                "1.5 cups basmati rice, soaked for 30 minutes",
+                "2 tbsp ghee or oil",
+                "1 large onion, thinly sliced",
+                "1 tbsp ginger-garlic paste",
+                "Assorted vegetables (carrots, peas, potatoes, beans), chopped",
+                "1/2 cup plain yogurt",
+                "1 tsp red chili powder",
+                "1 tsp turmeric powder",
+                "1 tbsp biryani masala",
+                "Whole spices: 2 bay leaves, 4-5 green cardamom pods, 1 cinnamon stick",
+                "Salt to taste",
+                "Fresh mint and cilantro, chopped",
+                "3 cups hot water",
+                "A pinch of saffron soaked in 2 tbsp warm milk (optional)"
+            ],
+            instructions: [
+                "Drain soaked rice. Heat ghee or oil in a heavy-bottomed pot.",
+                "Add whole spices and let them splutter. Add sliced onion and cook until golden brown.",
+                "Add ginger-garlic paste and cook for 1 minute.",
+                "Add chopped vegetables, red chili powder, turmeric powder, and biryani masala. Sauté for 5-7 minutes.",
+                "Stir in yogurt and salt. Cook until the mixture thickens slightly.",
+                "Add drained rice, chopped mint, and cilantro. Mix gently.",
+                "Pour in hot water and bring to a boil. Reduce heat to low, cover tightly, and cook for 15-20 minutes or until rice is done.",
+                "If using, drizzle saffron milk over the rice before covering.",
+                "Let it rest for 10 minutes before fluffing with a fork. Serve hot with raita."
+            ],
+            prepTime: 20,
+            cookTime: 35,
+            servings: 4,
+            tags: ["Indian", "Rice", "Vegetarian", "One-Pot"],
+            likes: 45
+        },
+        {
+            id: 12,
+            title: "Aloo Gobi",
+            // author: "Chef Rohan", // Author removed
+            date: "2025-07-10",
+            category: "dinner",
+            image: "images/aloo-gobi.jpg",
+            intro: "A simple and comforting Indian dry curry made with potatoes (aloo) and cauliflower (gobi), seasoned with aromatic spices.",
+            ingredients: [
+                "2 medium potatoes, peeled and cubed",
+                "1 small cauliflower, cut into florets",
+                "2 tbsp oil",
+                "1 tsp cumin seeds",
+                "1 large onion, chopped",
+                "1 tbsp ginger-garlic paste",
+                "1 tsp turmeric powder",
+                "1 tsp coriander powder",
+                "1/2 tsp red chili powder (adjust to taste)",
+                "1/2 tsp garam masala",
+                "Salt to taste",
+                "1/4 cup water",
+                "Fresh cilantro, chopped for garnish"
+            ],
+            instructions: [
+                "Heat oil in a large pan or kadai. Add cumin seeds and let them splutter.",
+                "Add chopped onion and sauté until golden brown.",
+                "Add ginger-garlic paste and cook for 1 minute.",
+                "Add cubed potatoes and cauliflower florets. Stir well.",
+                "Add turmeric powder, coriander powder, red chili powder, and salt. Mix thoroughly to coat the vegetables.",
+                "Add 1/4 cup water, cover the pan, and cook on medium-low heat for 15-20 minutes, or until potatoes and cauliflower are tender, stirring occasionally.",
+                "Remove lid, increase heat to medium, and cook for another 5 minutes, stirring, to allow any excess moisture to evaporate and vegetables to get slightly browned.",
+                "Stir in garam masala and chopped cilantro.",
+                "Serve hot with roti, naan, or rice."
+            ],
+            prepTime: 15,
+            cookTime: 30,
+            servings: 4,
+            tags: ["Indian", "Vegetarian", "Curry", "Side Dish"],
+            likes: 38
+        },
+        {
+            id: 13,
+            title: "Mango Lassi",
+            // author: "Chef Nisha", // Author removed
+            date: "2025-07-11",
+            category: "beverages",
+            image: "images/Mango Lassi.jpg",
+            intro: "A classic Indian yogurt-based drink, sweet, refreshing, and perfect for a summer day or to accompany a spicy meal.",
+            ingredients: [  
+                "1 cup ripe mango pulp (fresh or canned)",
+                "1 cup plain yogurt (dahi)",
+                "1/2 cup milk (optional, for thinner consistency)",
+                "2-3 tbsp sugar (adjust to taste)",
+                "1/4 tsp cardamom powder (optional)",
+                "Ice cubes (optional)",
+                "Few mint leaves or mango slice for garnish"
+            ],
+            instructions: [
+                "In a blender, combine mango pulp, plain yogurt, milk (if using), sugar, and cardamom powder.",
+                "Blend until smooth and creamy. Make sure there are no lumps.",
+                "Taste and adjust sugar as per your preference.",
+                "If you prefer a colder lassi, add a few ice cubes and blend again until smooth.",
+                "Pour into serving glasses.",
+                "Garnish with a mint leaf or a slice of mango.",
+                "Serve immediately and enjoy the refreshing taste!"
+            ],
+            prepTime: 5,
+            cookTime: 0,
+            servings: 2,
+            tags: ["Indian", "Drink", "Summer", "Refreshing"],
+            likes: 33
+        },
+        {
+            id: 14,
+            title: "Gulab Jamun",
+            // author: "Chef Deepak", // Author removed
+            date: "2025-07-11",
+            category: "snacks", // Can also be considered dessert
+            image: "images/Gulab Jamun.jpg", 
+            // Using a placeholder, a dedicated gulab jamun image would be better
+            intro: "Soft, spongy, and sweet deep-fried milk solids (khoya) balls, soaked in a fragrant sugar syrup.",
+            ingredients: [
+                "For Gulab Jamun:",
+                "1 cup khoya (reduced milk solids), grated",
+                "2 tbsp all-purpose flour (maida)",
+                "1/4 tsp baking soda",
+                "1-2 tbsp milk (if needed for kneading)",
+                "Oil or ghee for deep frying",
+                "For Sugar Syrup:",
+                "2 cups sugar",
+                "1 cup water",
+                "4-5 green cardamom pods, lightly crushed",
+                "Few strands of saffron (optional)",
+                "1 tsp rose water (optional)"
+            ],
+            instructions: [
+                "For Sugar Syrup: Combine sugar, water, and cardamom in a saucepan. Bring to a boil, then simmer for 5-7 minutes until slightly thick and sticky. Add saffron and rose water. Keep warm.",
+                "For Gulab Jamun: In a bowl, knead khoya until smooth. Add all-purpose flour and baking soda. Knead gently to form a soft dough. If it's too dry, add a few drops of milk.",
+                "Divide dough into small portions and roll each into a smooth, crack-free ball.",
+                "Heat oil or ghee in a deep pan over low-medium heat. Fry the gulab jamuns in batches, turning constantly, until golden brown all over.",
+                "Drain excess oil and immediately transfer the hot gulab jamuns into the warm sugar syrup.",
+                "Let them soak in the syrup for at least 1-2 hours (or overnight) for them to absorb the sweetness and become soft and juicy.",
+                "Serve warm or at room temperature."
+            ],
+            prepTime: 20,
+            cookTime: 30,
+            servings: 6,
+            tags: ["Indian", "Dessert", "Sweet", "Festive"],
+            likes: 30
+        },
+        {
+            id: 15,
+            title: "Besan Chilla – Savory Gram Flour Pancake",
+            date: "2025-07-11",
+            category: "breakfast", 
+            image: "images/Besan Chilla.jpg", 
+            // Using a placeholder, a dedicated gulab jamun image would be better
+            intro: "Besan Chilla is a quick and healthy Indian pancake made with gram flour and veggies. It’s high in protein, easy to digest, and ideal for a light breakfast or evening snack.",
+            ingredients: [
+                "1 cup besan (gram flour)",
+                "½ onion, finely chopped",
+                "¼ cup grated carrot (optional)","2 tbsp chopped tomato",
+                "1 green chili, chopped",
+                "2 tbsp chopped coriander leaves",
+                "Salt to taste",
+                "¼ tsp turmeric powder",
+                "¼ tsp red chili powder",
+                "Water as needed to make a pourable batter",
+                "Oil or ghee for cooking",
+            ],
+            instructions: [
+                "In a mixing bowl, combine besan, chopped veggies, coriander, and spices.",
+                "Gradually add water and whisk to form a smooth batter (like dosa batter consistency).",
+                "Heat a non-stick tawa or pan and lightly grease it with oil.",
+                "Pour a ladle of batter and spread it into a circle like a pancake.",
+                "Drizzle a little oil around the edges and cook on medium flame.",
+                "Flip and cook both sides until golden and crisp.",
+                "Repeat with remaining batter.Let them soak in the syrup for at least 1-2 hours (or overnight) for them to absorb the sweetness and become soft and juicy.",
+            ],
+            prepTime: 10,
+            cookTime: 15,
+            servings: 3,
+            tags: ["BesanChilla ", "HealthyBreakfast ", "IndianPancake ", "VegetarianRecipe"],
+            likes: 30
+        },
+        {
+            id: 16,
+            title: "Curd Rice – South Indian Comfort Food",
+            date: "2025-07-11",
+            category: "lunch", 
+            image: "images/Curd Rice.jpg", 
+            // Using a placeholder, a dedicated gulab jamun image would be better
+            intro: "Curd Rice, or Thayir Sadam, is a cooling South Indian dish made with soft cooked rice mixed with curd and tempered with mild spices. It’s light, refreshing, and perfect for hot days or a simple lunch.",
+            ingredients: [
+                "1 cup cooked rice (soft and slightly mushy)",
+                "1 cup thick curd (yogurt)",
+                "¼ cup milk (optional, for creaminess)",
+                "Salt to taste",
+                "1 tsp oil or ghee",
+                "½ tsp mustard seeds",
+                "1–2 green chilies, chopped",
+                "1 tsp grated ginger",
+                "8–10 curry leaves",
+                "1 tbsp chopped coriander",
+                "A pinch of asafoetida (hing)",
+                "1 tbsp grated carrot or pomegranate seeds (for garnish – optional)",
+            ],
+            instructions: [
+                "In a bowl, mash the cooked rice lightly with a spoon or hands.",
+                "Add curd, milk (if using), and salt. Mix well until creamy.",
+                "Heat oil or ghee in a small pan. Add mustard seeds and let them splutter.",
+                "Add green chilies, ginger, curry leaves, and asafoetida. Sauté for a few seconds.",
+                "Pour this tempering over the curd-rice mixture. Mix gently.",
+                "Garnish with coriander and optional toppings like grated carrot or pomegranate..",
+            ],
+            prepTime: 10,
+            cookTime: 10,
+            servings: 3,
+            tags: ["CurdRice", "SouthIndianFood ", "ComfortFood ", "CoolingMeals"],
+            likes: 30
+        },
+    ];
+
+    // DOM Elements
+    const recipesContainer = document.getElementById('recipes-container');
+    const featuredRecipe = document.getElementById('featured-recipe');
+    const recipeModal = document.getElementById('recipe-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    const closeModal = document.getElementById('close-modal');
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const adminToggle = document.getElementById('admin-toggle');
+    const adminLogin = document.getElementById('admin-login');
+    const adminPanel = document.getElementById('admin-panel');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const recipeForm = document.getElementById('recipe-form');
+    const adminRecipesList = document.getElementById('admin-recipes-list');
+
+    // State
+    let currentCategory = 'all';
+    let likedRecipes = JSON.parse(localStorage.getItem('likedRecipes')) || [];
+    let isAdminLoggedIn = false;
+
+    // Initialize the app
+    function init() {
+        renderRecipes();
+        renderFeaturedRecipe();
+
+        // Set up event listeners
+        closeModal.addEventListener('click', () => {
+            recipeModal.classList.add('hidden');
+        });
+
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                renderRecipes();
+            });
+        });
+
+        adminToggle.addEventListener('click', toggleAdminPanel);
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        recipeForm.addEventListener('submit', handleAddRecipe);
+    }
+
+    // Render recipes based on current category
+    function renderRecipes() {
+        recipesContainer.innerHTML = '';
+
+        let filteredRecipes = recipes;
+        if (currentCategory !== 'all') {
+            filteredRecipes = recipes.filter(recipe => recipe.category === currentCategory);
+        }
+
+        filteredRecipes.forEach(recipe => {
+            const recipeCard = document.createElement('div');
+            recipeCard.className = 'recipe-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition';
+
+            const isLiked = likedRecipes.includes(recipe.id);
+
+            recipeCard.innerHTML = `
+                <img src="${recipe.image}" alt="${recipe.title}" class="w-full h-48 object-cover">
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm text-orange-500 font-semibold uppercase">${recipe.category}</span>
+                        <button class="like-btn ${isLiked ? 'liked' : ''}" data-id="${recipe.id}">
+                            <i class="fas fa-heart"></i> <span class="like-count">${recipe.likes}</span>
+                        </button>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">${recipe.title}</h3>
+                    <p class="text-gray-600 text-sm mb-3">Posted on ${formatDate(recipe.date)}</p>
+                    <p class="text-gray-700 mb-4 line-clamp-2">${recipe.intro}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${recipe.tags.map(tag => `<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">${tag}</span>`).join('')}
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500 mb-4">
+                        <span><i class="fas fa-clock mr-1"></i> Prep: ${recipe.prepTime} min</span>
+                        <span><i class="fas fa-fire mr-1"></i> Cook: ${recipe.cookTime} min</span>
+                        <span><i class="fas fa-utensils mr-1"></i> Serves: ${recipe.servings}</span>
+                    </div>
+                    <button class="view-recipe-btn w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition" data-id="${recipe.id}">
+                        View Recipe
+                    </button>
+                </div>
+            `;
+
+            recipesContainer.appendChild(recipeCard);
+        });
+
+        // Add event listeners to like buttons
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', handleLike);
+        });
+
+        // Add event listeners to view recipe buttons
+        document.querySelectorAll('.view-recipe-btn').forEach(btn => {
+            btn.addEventListener('click', () => viewRecipe(parseInt(btn.dataset.id)));
+        });
+    }
+
+    // Render featured recipe
+    function renderFeaturedRecipe() {
+        if (recipes.length === 0) return;
+
+        // Get the most liked recipe
+        const featured = [...recipes].sort((a, b) => b.likes - a.likes)[0];
+
+        featuredRecipe.innerHTML = `
+            <div class="md:flex">
+                <div class="md:w-1/2">
+                    <img src="${featured.image}" alt="${featured.title}" class="w-full h-64 md:h-full object-cover">
+                </div>
+                <div class="md:w-1/2 p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm text-orange-500 font-semibold uppercase">Featured • ${featured.category}</span>
+                        <button class="like-btn ${likedRecipes.includes(featured.id) ? 'liked' : ''}" data-id="${featured.id}">
+                            <i class="fas fa-heart"></i> <span class="like-count">${featured.likes}</span>
+                        </button>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">${featured.title}</h3>
+                    <p class="text-gray-600 text-sm mb-4">Posted on ${formatDate(featured.date)}</p>
+                    <p class="text-gray-700 mb-6">${featured.intro}</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        ${featured.tags.map(tag => `<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">${tag}</span>`).join('')}
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500 mb-6">
+                        <span><i class="fas fa-clock mr-1"></i> Prep: ${featured.prepTime} min</span>
+                        <span><i class="fas fa-fire mr-1"></i> Cook: ${featured.cookTime} min</span>
+                        <span><i class="fas fa-utensils mr-1"></i> Serves: ${featured.servings}</span>
+                    </div>
+                    <button class="view-recipe-btn w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white py-2 px-6 rounded-lg transition" data-id="${featured.id}">
+                        View Full Recipe
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add event listener to featured recipe's like button
+        featuredRecipe.querySelector('.like-btn').addEventListener('click', handleLike);
+
+        // Add event listener to featured recipe's view button
+        featuredRecipe.querySelector('.view-recipe-btn').addEventListener('click', () => {
+            viewRecipe(parseInt(featuredRecipe.querySelector('.view-recipe-btn').dataset.id));
+        });
+    }
+
+    // View full recipe in modal
+    function viewRecipe(id) {
+        const recipe = recipes.find(r => r.id === id);
+        if (!recipe) return;
+
+        modalTitle.textContent = recipe.title;
+
+        modalContent.innerHTML = `
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <span class="text-sm text-orange-500 font-semibold uppercase">${recipe.category}</span>
+                        <span class="text-gray-500 mx-2">•</span>
+                        <span class="text-gray-600 text-sm">Posted on ${formatDate(recipe.date)}</span>
+                    </div>
+                    <button class="like-btn ${likedRecipes.includes(recipe.id) ? 'liked' : ''}" data-id="${recipe.id}">
+                        <i class="fas fa-heart"></i> <span class="like-count">${recipe.likes}</span>
+                    </button>
+                </div>
+
+                <img src="${recipe.image}" alt="${recipe.title}" class="w-full h-64 object-cover rounded-lg mb-6">
+
+                <div class="flex flex-wrap gap-2 mb-6">
+                    ${recipe.tags.map(tag => `<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">${tag}</span>`).join('')}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg mb-6">
+                    <div class="text-center">
+                        <div class="text-gray-500 text-sm">Prep Time</div>
+                        <div class="font-bold">${recipe.prepTime} min</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-500 text-sm">Cook Time</div>
+                        <div class="font-bold">${recipe.cookTime} min</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-500 text-sm">Servings</div>
+                        <div class="font-bold">${recipe.servings}</div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Introduction</h4>
+                    <p class="text-gray-700">${recipe.intro}</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Ingredients</h4>
+                        <ul class="space-y-2">
+                            ${recipe.ingredients.map(ing => `<li class="flex items-start">
+                                <span class="inline-block w-2 h-2 bg-orange-500 rounded-full mt-2 mr-2"></span>
+                                <span>${ing}</span>
+                            </li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Instructions</h4>
+                        <ol class="space-y-3">
+                            ${recipe.instructions.map((step, i) => `<li class="flex">
+                                <span class="font-bold text-orange-500 mr-2">${i + 1}.</span>
+                                <span>${step}</span>
+                            </li>`).join('')}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add event listener to modal's like button
+        modalContent.querySelector('.like-btn').addEventListener('click', function() {
+            handleLike.call(this);
+            // Update the like count in the recipes container if this recipe is displayed there
+            document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(btn => {
+                const countSpan = btn.querySelector('.like-count');
+                if (countSpan) {
+                    countSpan.textContent = recipes.find(r => r.id === id).likes;
+                }
+            });
+        });
+
+        recipeModal.classList.remove('hidden');
+    }
+
+    // Handle like button click
+    function handleLike() {
+        const recipeId = parseInt(this.dataset.id);
+        const recipe = recipes.find(r => r.id === recipeId);
+
+        if (!recipe) return;
+
+        const isLiked = likedRecipes.includes(recipeId);
+
+        if (isLiked) {
+            // Unlike
+            likedRecipes = likedRecipes.filter(id => id !== recipeId);
+            recipe.likes--;
+            this.classList.remove('liked');
+        } else {
+            // Like
+            likedRecipes.push(recipeId);
+            recipe.likes++;
+            this.classList.add('liked');
+        }
+
+        // Update like count
+        const countSpan = this.querySelector('.like-count');
+        if (countSpan) {
+            countSpan.textContent = recipe.likes;
+        }
+
+        // Save to localStorage
+        localStorage.setItem('likedRecipes', JSON.stringify(likedRecipes));
+
+        // Update featured recipe if this is the featured one
+        const featuredId = parseInt(featuredRecipe.querySelector('.view-recipe-btn')?.dataset.id);
+        if (featuredId === recipeId) {
+            renderFeaturedRecipe();
+        }
+    }
+
+    // Toggle admin panel visibility
+    function toggleAdminPanel() {
+        if (isAdminLoggedIn) {
+            adminLogin.classList.remove('show-admin');
+            adminPanel.classList.toggle('show-admin');
+        } else {
+            adminPanel.classList.remove('show-admin');
+            adminLogin.classList.toggle('show-admin');
+        }
+    }
+
+    // Handle admin login
+    function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Simple validation (in a real app, this would be server-side)
+        if (username === 'admin' && password === 'recipe123') {
+            isAdminLoggedIn = true;
+            adminLogin.classList.remove('show-admin');
+            adminPanel.classList.add('show-admin');
+            renderAdminRecipes();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        } else {
+            alert('Invalid credentials. Try admin/recipe123');
+        }
+    }
+
+    // Handle admin logout
+    function handleLogout() {
+        isAdminLoggedIn = false;
+        adminPanel.classList.remove('show-admin');
+    }
+
+    // Render recipes in admin panel
+    function renderAdminRecipes() {
+        adminRecipesList.innerHTML = '';
+
+        recipes.forEach(recipe => {
+            const recipeItem = document.createElement('div');
+            recipeItem.className = 'bg-gray-50 p-4 rounded-lg';
+
+            recipeItem.innerHTML = `
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
+                    <h4 class="font-semibold text-lg">${recipe.title}</h4>
+                    <div class="flex space-x-2 mt-2 md:mt-0">
+                        <button class="edit-recipe-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" data-id="${recipe.id}">
+                            Edit
+                        </button>
+                        <button class="delete-recipe-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm" data-id="${recipe.id}">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center text-sm text-gray-600 space-x-4">
+                    <span><i class="fas fa-heart text-red-400 mr-1"></i> ${recipe.likes} likes</span>
+                    <span><i class="fas fa-calendar-alt mr-1"></i> ${formatDate(recipe.date)}</span>
+                    <span><i class="fas fa-tag mr-1"></i> ${recipe.category}</span>
+                </div>
+            `;
+
+            adminRecipesList.appendChild(recipeItem);
+        });
+
+        // Add event listeners to edit and delete buttons
+        document.querySelectorAll('.edit-recipe-btn').forEach(btn => {
+            btn.addEventListener('click', () => editRecipe(parseInt(btn.dataset.id)));
+        });
+
+        document.querySelectorAll('.delete-recipe-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteRecipe(parseInt(btn.dataset.id)));
+        });
+    }
+
+    // Handle adding a new recipe
+    function handleAddRecipe(e) {
+        e.preventDefault();
+
+        const newRecipe = {
+            id: recipes.length > 0 ? Math.max(...recipes.map(r => r.id)) + 1 : 1,
+            title: document.getElementById('recipe-title').value,
+            // author: document.getElementById('recipe-author').value, // Author field removed from here as well
+            date: new Date().toISOString().split('T')[0],
+            category: document.getElementById('recipe-category').value,
+            image: document.getElementById('recipe-image').value,
+            intro: document.getElementById('recipe-intro').value,
+            ingredients: document.getElementById('recipe-ingredients').value.split('\n').filter(line => line.trim()),
+            instructions: document.getElementById('recipe-instructions').value.split('\n').filter(line => line.trim()),
+            prepTime: parseInt(document.getElementById('recipe-prep-time').value),
+            cookTime: parseInt(document.getElementById('recipe-cook-time').value),
+            servings: parseInt(document.getElementById('recipe-servings').value),
+            tags: document.getElementById('recipe-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+            likes: 0
+        };
+
+        recipes.push(newRecipe);
+        renderRecipes();
+        renderFeaturedRecipe();
+        renderAdminRecipes();
+
+        // Reset form
+        recipeForm.reset();
+
+        // Show success message
+        alert('Recipe added successfully!');
+    }
+
+    // Edit a recipe
+    function editRecipe(id) {
+        const recipe = recipes.find(r => r.id === id);
+        if (!recipe) return;
+
+        // Fill the form with recipe data
+        document.getElementById('recipe-title').value = recipe.title;
+        // document.getElementById('recipe-author').value = recipe.author; // Author field removed from here
+        document.getElementById('recipe-category').value = recipe.category;
+        document.getElementById('recipe-image').value = recipe.image;
+        document.getElementById('recipe-intro').value = recipe.intro;
+        document.getElementById('recipe-ingredients').value = recipe.ingredients.join('\n');
+        document.getElementById('recipe-instructions').value = recipe.instructions.join('\n');
+        document.getElementById('recipe-prep-time').value = recipe.prepTime;
+        document.getElementById('recipe-cook-time').value = recipe.cookTime;
+        document.getElementById('recipe-servings').value = recipe.servings;
+        document.getElementById('recipe-tags').value = recipe.tags.join(', ');
+
+        // Remove the recipe from the array (it will be re-added when form is submitted)
+        recipes = recipes.filter(r => r.id !== id);
+
+        // Scroll to form
+        document.getElementById('recipe-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Delete a recipe
+    function deleteRecipe(id) {
+        if (confirm('Are you sure you want to delete this recipe?')) {
+            recipes = recipes.filter(r => r.id !== id);
+            renderRecipes();
+            renderFeaturedRecipe();
+            renderAdminRecipes();
+        }
+    }
+
+    // Format date as "Month Day, Year"
+    function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
